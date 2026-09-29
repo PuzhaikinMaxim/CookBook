@@ -150,13 +150,6 @@ fun RecipeEditorScreen(
                 )
             }
             item {
-                CoverEditor(
-                    coverPath = recipe.coverImagePath,
-                    onPick = { launchPicker(PickTarget.Cover) },
-                    onRemove = vm::removeCoverImage,
-                )
-            }
-            item {
                 CookBookTextField(
                     value = recipe.title,
                     onValueChange = vm::setTitle,
@@ -307,6 +300,7 @@ private fun EditableBlockView(
     onPickImage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val recipe by vm.recipe.collectAsStateWithLifecycle()
     CookBookCard(modifier = modifier) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             when (block) {
@@ -328,7 +322,7 @@ private fun EditableBlockView(
                 CookBookButton(
                     text = stringResource(R.string.editor_move_down),
                     onClick = { vm.moveDown(index) },
-                    enabled = index < vm.recipe.value.blocks.lastIndex,
+                    enabled = index < recipe.blocks.lastIndex,
                     buttonStyle = CookBookButtonStyle.Text,
                 )
                 Spacer(Modifier.weight(1f))
