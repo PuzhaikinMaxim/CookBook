@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -141,6 +142,13 @@ fun RecipeEditorScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
+            item {
+                CoverEditor(
+                    coverPath = recipe.coverImagePath,
+                    onPick = { launchPicker(PickTarget.Cover) },
+                    onRemove = vm::removeCoverImage,
+                )
+            }
             item {
                 CoverEditor(
                     coverPath = recipe.coverImagePath,
