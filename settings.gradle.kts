@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google {
             content {
@@ -22,6 +23,11 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "My Application"
+rootProject.name = "CookBook"
 include(":app")
- 
+include(":core:common")
+include(":core:designsystem")
+include(":feature:recipes:data")
+include(":feature:recipes:ui")
+include(":feature:recipeeditor:data")
+include(":feature:recipeeditor:ui")
