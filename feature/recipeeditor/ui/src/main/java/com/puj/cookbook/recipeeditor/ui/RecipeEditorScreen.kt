@@ -4,8 +4,10 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,10 +16,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
@@ -37,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -57,8 +62,18 @@ import com.puj.cookbook.recipes.domain.TimerBlock
 /** Быстрые пресеты длительности таймера в минутах. */
 private val TIMER_PRESETS_MINUTES = listOf(1, 5, 10, 30)
 
+/** Куда импортировать выбранное изображение: обложка блюда или конкретный блок. */
+private sealed interface PickTarget {
+    /** Общая картинка блюда. */
+    data object Cover : PickTarget
+
+    /** Изображение внутри блока с индексом [index]. */
+    data class Block(val index: Int) : PickTarget
+}
+
 /**
- * Экран создания и редактирования рецепта: заголовок, описание, блоки и их сохранение.
+ * Экран создания и редактирования рецепта: обложка блюда, заголовок, описание, блоки
+ * и их сохранение.
  *
  * @param onSaved вызывается с идентификатором сохранённого рецепта.
  * @param onCancel закрывает экран без сохранения.
@@ -78,15 +93,21 @@ fun RecipeEditorScreen(
     val defaultChecklistTitle = stringResource(R.string.editor_default_checklist_title)
     val defaultTimerLabel = stringResource(R.string.editor_default_timer_label)
 
-    var pickTarget by remember { mutableStateOf<Int?>(null) }
+    var pickTarget by remember { mutableStateOf<PickTarget?>(null) }
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
-        if (uri != null) vm.importPicture(pickTarget, uri, queryDisplayName(uri))
+        if (uri != null) {
+            when (val target = pickTarget) {
+                is PickTarget.Cover -> vm.importCoverImage(uri, queryDisplayName(uri))
+                is PickTarget.Block -> vm.importPicture(target.index, uri, queryDisplayName(uri))
+                null -> vm.importPicture(null, uri, queryDisplayName(uri))
+            }
+        }
         pickTarget = null
     }
-    val launchPicker: (Int?) -> Unit = { index ->
-        pickTarget = index
+    val launchPicker: (PickTarget?) -> Unit = { target ->
+        pickTarget = target
         picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
@@ -117,6 +138,13 @@ fun RecipeEditorScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            item {
+                CoverEditor(
+                    coverPath = recipe.coverImagePath,
+                    onPick = { launchPicker(PickTarget.Cover) },
+                    onRemove = vm::removeCoverImage,
+                )
+            }
             item {
                 OutlinedTextField(
                     value = recipe.title,
@@ -150,7 +178,7 @@ fun RecipeEditorScreen(
                     index = index,
                     block = block,
                     vm = vm,
-                    onPickImage = { launchPicker(index) },
+                    onPickImage = { launchPicker(PickTarget.Block(index)) },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -168,6 +196,56 @@ fun RecipeEditorScreen(
 }
 
 private fun queryDisplayName(uri: Uri): String? = uri.lastPathSegment
+
+/** Секция общей картинки блюда (обложки) с выбором, заменой и удалением. */
+@Composable
+private fun CoverEditor(
+    coverPath: String?,
+    onPick: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.editor_cover_label), style = MaterialTheme.typography.labelLarge)
+
+        if (coverPath != null) {
+            RecipePicture(path = coverPath, contentDescription = null)
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(DesignSystemR.drawable.ic_photo),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.size(40.dp),
+                )
+            }
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = onPick, modifier = Modifier.weight(1f)) {
+                Text(
+                    stringResource(
+                        if (coverPath == null) R.string.editor_cover_add else R.string.editor_cover_change
+                    )
+                )
+            }
+            if (coverPath != null) {
+                TextButton(onClick = onRemove) {
+                    Text(
+                        text = stringResource(R.string.editor_cover_remove),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        }
+    }
+}
 
 /** Ряд кнопок для добавления новых блоков в рецепт. */
 @Composable
@@ -201,7 +279,7 @@ private fun BlockChip(labelRes: Int, iconRes: Int, onClick: () -> Unit) {
             Icon(
                 painter = painterResource(iconRes),
                 contentDescription = null,
-                modifier = Modifier.width(20.dp),
+                modifier = Modifier.size(20.dp),
             )
         },
     )

@@ -30,6 +30,11 @@ object RecipeDrafting {
         return recipe.copy(description = description)
     }
 
+    /** Возвращает копию рецепта с новой общей картинкой блюда [path] (или без неё при null). */
+    fun withCoverImage(recipe: Recipe, path: String?): Recipe {
+        return recipe.copy(coverImagePath = path)
+    }
+
     /** Добавляет в конец рецепта текстовый блок с текстом [text]. */
     fun addText(recipe: Recipe, text: String = ""): Recipe {
         return recipe.copy(blocks = recipe.blocks + TextBlock(text = text))

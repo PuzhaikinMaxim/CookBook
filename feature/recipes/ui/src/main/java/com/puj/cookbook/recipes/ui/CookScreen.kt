@@ -110,6 +110,11 @@ private fun RecipeBody(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
     ) {
+        recipe.coverImagePath?.let { cover ->
+            Spacer(Modifier.height(8.dp))
+            RecipePicture(path = cover, contentDescription = recipe.title)
+            Spacer(Modifier.height(12.dp))
+        }
         if (recipe.description.isNotBlank()) {
             Text(recipe.description, style = MaterialTheme.typography.bodyLarge)
             Spacer(Modifier.height(8.dp))
