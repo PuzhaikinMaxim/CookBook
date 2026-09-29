@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- knob -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,38m-5,0a5,5 0 1,0 10,0a5,5 0 1,0 -10,0" />
+    <!-- lid -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,46h48a5,5 0 0 1 0,10h-48a5,5 0 0 1 0,-10z" />
+    <!-- handles -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M26,60h8v8h-8a4,4 0 0 1 -4,-4v0a4,4 0 0 1 4,-4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M82,60h-8v8h8a4,4 0 0 0 4,-4v0a4,4 0 0 0 -4,-4z" />
+    <!-- pot body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,56h40v14a15,15 0 0 1 -15,15h-10a15,15 0 0 1 -15,-15z" />
+</vector>

@@ -21,6 +21,7 @@ class AndroidComposeConventionPlugin : Plugin<Project> {
             add("implementation", platform(bom))
             add("androidTestImplementation", platform(bom))
             add("implementation", libs.findLibrary("androidx-compose-ui").get())
+            add("implementation", libs.findLibrary("androidx-compose-animation").get())
             add("implementation", libs.findLibrary("androidx-compose-ui-graphics").get())
             add("implementation", libs.findLibrary("androidx-compose-foundation").get())
             add("implementation", libs.findLibrary("androidx-compose-ui-tooling-preview").get())

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="picture_placeholder">Picture</string>
+    <string name="splash_title">CookBook</string>
+    <string name="splash_tagline">Your cooking helper</string>
 </resources>
