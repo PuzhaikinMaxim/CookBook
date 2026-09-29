@@ -3,7 +3,7 @@ package com.puj.cookbook.recipes.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.puj.cookbook.common.RecipeNavArgs
+import com.puj.cookbook.core.RecipeNavArgs
 import com.puj.cookbook.recipes.domain.Recipe
 import com.puj.cookbook.recipes.domain.RecipeDefaults
 import com.puj.cookbook.recipes.domain.RecipeRepository

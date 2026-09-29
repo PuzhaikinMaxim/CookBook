@@ -11,25 +11,23 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.puj.cookbook.designsystem.RecipePicture
+import com.puj.cookbook.core.CookBookButton
+import com.puj.cookbook.core.CookBookButtonStyle
+import com.puj.cookbook.core.CookBookProgressBar
+import com.puj.cookbook.core.CookBookScaffold
+import com.puj.cookbook.core.CookBookText
+import com.puj.cookbook.core.CookBookTheme
+import com.puj.cookbook.core.CookBookTopBar
+import com.puj.cookbook.core.RecipePicture
 import com.puj.cookbook.recipes.domain.ChecklistBlock
 import com.puj.cookbook.recipes.domain.PictureBlock
 import com.puj.cookbook.recipes.domain.RecipeBlock
@@ -45,7 +43,6 @@ import com.puj.cookbook.recipes.ui.timer.CookingTimerController
  * @param onBack выход из режима готовки.
  * @param onFinish завершение готовки на последнем шаге.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CookAlongScreen(
     onBack: () -> Unit,
@@ -60,39 +57,43 @@ fun CookAlongScreen(
     val steps: List<RecipeBlock> = current?.blocks.orEmpty()
     val safeIndex = stepIndex.coerceIn(0, (steps.size - 1).coerceAtLeast(0))
 
-    Scaffold(
+    CookBookScaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        if (steps.isEmpty()) current?.title.orEmpty()
-                        else stringResource(R.string.cook_step_progress, safeIndex + 1, steps.size)
+            CookBookTopBar(
+                title = if (steps.isEmpty()) {
+                    current?.title.orEmpty()
+                } else {
+                    stringResource(R.string.cook_step_progress, safeIndex + 1, steps.size)
+                },
+                navigation = {
+                    CookBookButton(
+                        text = stringResource(R.string.action_exit),
+                        onClick = onBack,
+                        buttonStyle = CookBookButtonStyle.Text,
                     )
                 },
-                navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(R.string.action_exit)) } },
             )
         },
-    ) { innerPadding ->
+    ) {
         if (current == null) {
-            CenteredMessage(stringResource(R.string.recipe_not_found), Modifier.padding(innerPadding))
-            return@Scaffold
+            CenteredMessage(stringResource(R.string.recipe_not_found))
+            return@CookBookScaffold
         }
         if (steps.isEmpty()) {
-            CenteredMessage(stringResource(R.string.cook_no_steps), Modifier.padding(innerPadding))
-            return@Scaffold
+            CenteredMessage(stringResource(R.string.cook_no_steps))
+            return@CookBookScaffold
         }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .padding(horizontal = 16.dp),
         ) {
-            LinearProgressIndicator(
-                progress = { (safeIndex + 1f) / steps.size },
+            CookBookProgressBar(
+                progress = (safeIndex + 1f) / steps.size,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(14.dp))
 
             Box(
                 modifier = Modifier
@@ -140,9 +141,9 @@ private fun StepContent(
     onResetTimer: (TimerBlock) -> Unit,
 ) {
     when (block) {
-        is TextBlock -> Text(
+        is TextBlock -> CookBookText(
             text = block.text,
-            style = MaterialTheme.typography.headlineSmall,
+            style = CookBookTheme.typography.title,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -153,7 +154,12 @@ private fun StepContent(
         ) {
             RecipePicture(path = block.imagePath, contentDescription = block.caption)
             if (block.caption.isNotBlank()) {
-                Text(block.caption, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
+                CookBookText(
+                    text = block.caption,
+                    style = CookBookTheme.typography.body,
+                    color = CookBookTheme.colors.textSecondary,
+                    textAlign = TextAlign.Center,
+                )
             }
         }
 
@@ -180,25 +186,32 @@ private fun StepNavigation(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TextButton(onClick = onPrevious, enabled = !isFirst, modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.action_previous))
+        Box(modifier = Modifier.weight(1f)) {
+            CookBookButton(
+                text = stringResource(R.string.action_previous),
+                onClick = onPrevious,
+                enabled = !isFirst,
+                buttonStyle = CookBookButtonStyle.Outlined,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
-        Button(
-            onClick = if (isLast) onFinish else onNext,
-            modifier = Modifier.weight(1f),
-        ) {
-            Text(stringResource(if (isLast) R.string.action_finish else R.string.action_next))
+        Box(modifier = Modifier.weight(1f)) {
+            CookBookButton(
+                text = stringResource(if (isLast) R.string.action_finish else R.string.action_next),
+                onClick = if (isLast) onFinish else onNext,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
 
 /** По центру экрана показывает текстовое сообщение. */
 @Composable
-private fun CenteredMessage(text: String, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text, textAlign = TextAlign.Center, fontWeight = FontWeight.Medium)
+private fun CenteredMessage(text: String) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CookBookText(text = text, textAlign = TextAlign.Center)
     }
 }

@@ -1,4 +1,4 @@
-package com.puj.cookbook.common
+package com.puj.cookbook.core
 
 /** Ключи аргументов навигации, общие для графа рецептов и ViewModel-ей фич. */
 object RecipeNavArgs {

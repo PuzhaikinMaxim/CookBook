@@ -1,26 +1,19 @@
 package com.puj.cookbook.recipes.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,22 +22,30 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.puj.cookbook.designsystem.R as DesignSystemR
+import com.puj.cookbook.core.CookBookCard
+import com.puj.cookbook.core.CookBookFab
+import com.puj.cookbook.core.CookBookIconButton
+import com.puj.cookbook.core.CookBookScaffold
+import com.puj.cookbook.core.CookBookText
+import com.puj.cookbook.core.CookBookTextField
+import com.puj.cookbook.core.CookBookTheme
+import com.puj.cookbook.core.CookBookTopBar
+import com.puj.cookbook.core.R as CoreR
+import com.puj.cookbook.core.RecipeThumbnail
 import com.puj.cookbook.recipes.domain.ChecklistBlock
 import com.puj.cookbook.recipes.domain.PictureBlock
 import com.puj.cookbook.recipes.domain.Recipe
 import com.puj.cookbook.recipes.domain.TextBlock
 import com.puj.cookbook.recipes.domain.TimerBlock
+import com.puj.cookbook.recipes.domain.previewImagePath
 
 /**
  * Экран списка рецептов: поиск, список карточек и кнопка добавления нового рецепта.
@@ -52,7 +53,6 @@ import com.puj.cookbook.recipes.domain.TimerBlock
  * @param onOpenRecipe открывает рецепт по идентификатору.
  * @param onAddRecipe открывает редактор для создания нового рецепта.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipesScreen(
     onOpenRecipe: (Long) -> Unit,
@@ -73,27 +73,22 @@ fun RecipesScreen(
         }
     }
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.recipes_title)) }) },
+    CookBookScaffold(
+        topBar = { CookBookTopBar(title = stringResource(R.string.recipes_title)) },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddRecipe) {
-                Icon(
-                    painter = painterResource(DesignSystemR.drawable.ic_add),
-                    contentDescription = stringResource(R.string.recipes_add),
-                )
-            }
+            CookBookFab(
+                painter = painterResource(CoreR.drawable.ic_add),
+                contentDescription = stringResource(R.string.recipes_add),
+                onClick = onAddRecipe,
+            )
         },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
             if (recipes.isNotEmpty()) {
-                OutlinedTextField(
+                CookBookTextField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = { Text(stringResource(R.string.recipes_search_hint)) },
+                    placeholder = stringResource(R.string.recipes_search_hint),
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -106,7 +101,7 @@ fun RecipesScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
+                    CookBookText(
                         text = stringResource(R.string.recipes_search_empty, query),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 32.dp),
@@ -127,24 +122,28 @@ fun RecipesScreen(
 @Composable
 private fun EmptyRecipes(modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.Center) {
-        Icon(
-            painter = painterResource(DesignSystemR.drawable.ic_empty_recipes),
+        Image(
+            painter = painterResource(CoreR.drawable.ic_empty_recipes),
             contentDescription = null,
-            tint = Color.Unspecified,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .size(140.dp),
         )
-        Text(
-            stringResource(R.string.recipes_empty_title),
-            modifier = Modifier.fillMaxWidth(),
-            style = MaterialTheme.typography.titleLarge,
+        CookBookText(
+            text = stringResource(R.string.recipes_empty_title),
+            style = CookBookTheme.typography.title,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
             textAlign = TextAlign.Center,
         )
-        Text(
-            stringResource(R.string.recipes_empty_body),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 8.dp),
-            style = MaterialTheme.typography.bodyMedium,
+        CookBookText(
+            text = stringResource(R.string.recipes_empty_body),
+            style = CookBookTheme.typography.bodySmall,
+            color = CookBookTheme.colors.textSecondary,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp, vertical = 8.dp),
             textAlign = TextAlign.Center,
         )
     }
@@ -161,11 +160,11 @@ private fun RecipeList(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(
             top = 8.dp,
-            bottom = 88.dp,
+            bottom = 96.dp,
             start = 16.dp,
             end = 16.dp,
         ),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         items(recipes, key = { it.id }) { recipe ->
             RecipeCard(recipe, onClick = { onOpen(recipe.id) }, onDelete = { onDelete(recipe.id) })
@@ -173,59 +172,93 @@ private fun RecipeList(
     }
 }
 
-/** Карточка одного рецепта с названием, описанием, сводкой блоков и кнопкой удаления. */
+/** Карточка одного рецепта: миниатюра, название, описание, состав блоков и кнопка удаления. */
 @Composable
 private fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onDelete: () -> Unit) {
-    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
+    CookBookCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            RecipeThumbnail(
+                path = recipe.previewImagePath,
+                contentDescription = null,
+                modifier = Modifier.size(84.dp),
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                CookBookText(
                     text = recipe.title,
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = CookBookTheme.typography.heading,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                TextButton(onClick = onDelete) { Text(stringResource(R.string.action_delete)) }
+                if (recipe.description.isNotBlank()) {
+                    CookBookText(
+                        text = recipe.description,
+                        style = CookBookTheme.typography.bodySmall,
+                        color = CookBookTheme.colors.textSecondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                Spacer(Modifier.size(6.dp))
+                BlockTypeSummary(recipe)
             }
-            if (recipe.description.isNotBlank()) {
-                Text(
-                    text = recipe.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Text(
-                text = blockSummary(recipe),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            CookBookIconButton(
+                painter = painterResource(CoreR.drawable.ic_delete),
+                contentDescription = stringResource(R.string.action_delete),
+                onClick = onDelete,
+                tint = CookBookTheme.colors.error,
             )
         }
     }
 }
 
-/** Строит сводку по количеству блоков каждого типа, например «2 текста • 1 таймер». */
+/** Компактная сводка по типам блоков: иконка и количество. */
 @Composable
-private fun blockSummary(recipe: Recipe): String {
+private fun BlockTypeSummary(recipe: Recipe) {
     var text = 0
     var pictures = 0
     var checklists = 0
     var timers = 0
-    recipe.blocks.forEach {
-        when (it) {
+    recipe.blocks.forEach { block ->
+        when (block) {
             is TextBlock -> text++
             is PictureBlock -> pictures++
             is ChecklistBlock -> checklists++
             is TimerBlock -> timers++
         }
     }
-    val parts = buildList {
-        if (text > 0) add(pluralStringResource(R.plurals.block_summary_text, text, text))
-        if (pictures > 0) add(pluralStringResource(R.plurals.block_summary_pictures, pictures, pictures))
-        if (checklists > 0) add(pluralStringResource(R.plurals.block_summary_checklists, checklists, checklists))
-        if (timers > 0) add(pluralStringResource(R.plurals.block_summary_timers, timers, timers))
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (text > 0) SummaryItem(CoreR.drawable.ic_text, text)
+        if (pictures > 0) SummaryItem(CoreR.drawable.ic_photo, pictures)
+        if (checklists > 0) SummaryItem(CoreR.drawable.ic_checklist, checklists)
+        if (timers > 0) SummaryItem(CoreR.drawable.ic_timer, timers)
     }
-    return parts.joinToString(stringResource(R.string.block_summary_separator))
+}
+
+/** Один пункт сводки: иконка типа блока и число, если блоков больше одного. */
+@Composable
+private fun SummaryItem(iconRes: Int, count: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Image(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(CookBookTheme.colors.textSecondary),
+            modifier = Modifier.size(16.dp),
+        )
+        if (count > 1) {
+            Spacer(Modifier.width(2.dp))
+            CookBookText(
+                text = count.toString(),
+                style = CookBookTheme.typography.caption,
+                color = CookBookTheme.colors.textSecondary,
+            )
+        }
+    }
 }

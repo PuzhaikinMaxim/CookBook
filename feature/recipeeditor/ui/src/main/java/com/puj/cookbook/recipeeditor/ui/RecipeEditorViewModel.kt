@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.puj.cookbook.common.RecipeNavArgs
+import com.puj.cookbook.core.RecipeNavArgs
 import com.puj.cookbook.recipes.domain.ChecklistBlock
 import com.puj.cookbook.recipes.domain.PictureBlock
 import com.puj.cookbook.recipes.domain.Recipe
@@ -73,6 +73,22 @@ class RecipeEditorViewModel @Inject constructor(
     /** Изменяет описание рецепта. */
     fun setDescription(value: String) {
         update { recipe -> RecipeDrafting.withDescription(recipe, value) }
+    }
+
+    /** Импортирует выбранное изображение и делает его общей картинкой блюда (обложкой). */
+    fun importCoverImage(uri: Uri, displayName: String?) {
+        viewModelScope.launch {
+            runCatching { imageStore.import(uri, displayName) }
+                .onSuccess { path ->
+                    update { recipe -> RecipeDrafting.withCoverImage(recipe, path) }
+                }
+                .onFailure { _error.value = R.string.editor_error_image }
+        }
+    }
+
+    /** Убирает обложку блюда. */
+    fun removeCoverImage() {
+        update { recipe -> RecipeDrafting.withCoverImage(recipe, null) }
     }
 
     /** Добавляет текстовый блок. */

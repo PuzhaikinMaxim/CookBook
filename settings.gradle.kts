@@ -25,8 +25,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "CookBook"
 include(":app")
-include(":core:common")
-include(":core:designsystem")
+include(":core")
 include(":feature:recipes:data")
 include(":feature:recipes:ui")
 include(":feature:recipeeditor:data")

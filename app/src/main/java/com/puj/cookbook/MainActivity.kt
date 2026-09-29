@@ -11,8 +11,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,10 +24,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.puj.cookbook.common.RecipeNavArgs
-import com.puj.cookbook.common.RecipeRoutes
-import com.puj.cookbook.designsystem.CookBookSplash
-import com.puj.cookbook.designsystem.CookBookTheme
+import com.puj.cookbook.core.CookBookScaffold
+import com.puj.cookbook.core.CookBookSplash
+import com.puj.cookbook.core.CookBookTheme
+import com.puj.cookbook.core.RecipeNavArgs
+import com.puj.cookbook.core.RecipeRoutes
 import com.puj.cookbook.recipes.domain.RecipeDefaults
 import com.puj.cookbook.recipes.ui.CookAlongScreen
 import com.puj.cookbook.recipes.ui.CookScreen
@@ -79,11 +78,11 @@ private fun MainNavigation() {
     RequestNotificationPermission()
     val navController = rememberNavController()
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    CookBookScaffold {
         NavHost(
             navController = navController,
             startDestination = RecipeRoutes.RECIPES,
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.fillMaxSize(),
         ) {
             composable(RecipeRoutes.RECIPES) {
                 RecipesScreen(

@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 /** База данных приложения CookBook. */
 @Database(
     entities = [RecipeEntity::class, BlockEntity::class, CheckItemEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 abstract class CookBookDatabase : RoomDatabase() {

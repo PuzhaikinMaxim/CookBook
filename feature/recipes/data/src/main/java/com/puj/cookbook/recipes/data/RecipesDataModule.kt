@@ -24,7 +24,10 @@ object RecipesDataModule {
             context,
             CookBookDatabase::class.java,
             CookBookDatabase.DATABASE_NAME,
-        ).build()
+        )
+            // Приложение в разработке: при изменении схемы база пересоздаётся.
+            .fallbackToDestructiveMigration(true)
+            .build()
 
     /** Предоставляет реализацию [RecipeRepository] поверх базы данных. */
     @Provides

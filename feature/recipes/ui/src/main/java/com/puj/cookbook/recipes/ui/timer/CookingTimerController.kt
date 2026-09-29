@@ -9,7 +9,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.puj.cookbook.designsystem.R as DesignSystemR
+import com.puj.cookbook.core.R as CoreR
 import com.puj.cookbook.recipes.ui.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -132,7 +132,7 @@ class CookingTimerController @Inject constructor(
     private fun notifyFinished(timer: CookingTimer) {
         if (!canNotify()) return
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(DesignSystemR.drawable.ic_timer)
+            .setSmallIcon(CoreR.drawable.ic_timer)
             .setContentTitle(context.getString(R.string.timer_finished_title))
             .setContentText(timer.label.ifBlank { context.getString(R.string.timer_finished_body) })
             .setPriority(NotificationCompat.PRIORITY_HIGH)

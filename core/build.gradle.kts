@@ -4,5 +4,5 @@ plugins {
 }
 
 android {
-    namespace = "com.puj.cookbook.designsystem"
+    namespace = "com.puj.cookbook.core"
 }

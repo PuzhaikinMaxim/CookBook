@@ -24,8 +24,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:common"))
-    implementation(project(":core:designsystem"))
+    implementation(project(":core"))
     implementation(project(":feature:recipes:ui"))
     implementation(project(":feature:recipeeditor:ui"))
 

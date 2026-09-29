@@ -10,8 +10,7 @@ android {
 
 dependencies {
     api(project(":feature:recipeeditor:data"))
-    implementation(project(":core:common"))
-    implementation(project(":core:designsystem"))
+    implementation(project(":core"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.hilt.navigation.compose)
 }

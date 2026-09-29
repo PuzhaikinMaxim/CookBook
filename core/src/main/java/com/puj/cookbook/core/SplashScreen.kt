@@ -1,4 +1,4 @@
-package com.puj.cookbook.designsystem
+package com.puj.cookbook.core
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -8,6 +8,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -96,10 +94,9 @@ fun CookBookSplash(
                         .size(width = 140.dp, height = 120.dp)
                         .offset(y = (-72).dp),
                 )
-                Icon(
+                Image(
                     painter = painterResource(R.drawable.ic_cooking_pot),
                     contentDescription = null,
-                    tint = Color.Unspecified,
                     modifier = Modifier
                         .size(150.dp)
                         .scale(0.8f + 0.2f * entrance.value)
@@ -107,18 +104,17 @@ fun CookBookSplash(
                 )
             }
             Spacer(Modifier.height(20.dp))
-            Text(
+            CookBookText(
                 text = stringResource(R.string.splash_title),
+                style = CookBookTheme.typography.display.copy(fontWeight = FontWeight.Bold),
                 color = Color.White,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
                 modifier = Modifier.alpha(entrance.value),
             )
             Spacer(Modifier.height(6.dp))
-            Text(
+            CookBookText(
                 text = stringResource(R.string.splash_tagline),
+                style = CookBookTheme.typography.body,
                 color = Color.White.copy(alpha = 0.85f),
-                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.alpha(entrance.value),
             )
         }

@@ -4,8 +4,11 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,22 +17,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,15 +30,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.puj.cookbook.designsystem.R as DesignSystemR
-import com.puj.cookbook.designsystem.RecipePicture
-import com.puj.cookbook.designsystem.formatClock
+import com.puj.cookbook.core.CookBookButton
+import com.puj.cookbook.core.CookBookButtonStyle
+import com.puj.cookbook.core.CookBookCard
+import com.puj.cookbook.core.CookBookChip
+import com.puj.cookbook.core.CookBookScaffold
+import com.puj.cookbook.core.CookBookText
+import com.puj.cookbook.core.CookBookTextField
+import com.puj.cookbook.core.CookBookTheme
+import com.puj.cookbook.core.CookBookTopBar
+import com.puj.cookbook.core.R as CoreR
+import com.puj.cookbook.core.RecipePicture
+import com.puj.cookbook.core.formatClock
 import com.puj.cookbook.recipes.domain.CheckItem
 import com.puj.cookbook.recipes.domain.ChecklistBlock
 import com.puj.cookbook.recipes.domain.PictureBlock
@@ -57,13 +61,22 @@ import com.puj.cookbook.recipes.domain.TimerBlock
 /** Быстрые пресеты длительности таймера в минутах. */
 private val TIMER_PRESETS_MINUTES = listOf(1, 5, 10, 30)
 
+/** Куда импортировать выбранное изображение: обложка блюда или конкретный блок. */
+private sealed interface PickTarget {
+    /** Общая картинка блюда. */
+    data object Cover : PickTarget
+
+    /** Изображение внутри блока с индексом [index]. */
+    data class Block(val index: Int) : PickTarget
+}
+
 /**
- * Экран создания и редактирования рецепта: заголовок, описание, блоки и их сохранение.
+ * Экран создания и редактирования рецепта: обложка блюда, заголовок, описание, блоки
+ * и их сохранение.
  *
  * @param onSaved вызывается с идентификатором сохранённого рецепта.
  * @param onCancel закрывает экран без сохранения.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeEditorScreen(
     onSaved: (Long) -> Unit,
@@ -78,70 +91,88 @@ fun RecipeEditorScreen(
     val defaultChecklistTitle = stringResource(R.string.editor_default_checklist_title)
     val defaultTimerLabel = stringResource(R.string.editor_default_timer_label)
 
-    var pickTarget by remember { mutableStateOf<Int?>(null) }
+    var pickTarget by remember { mutableStateOf<PickTarget?>(null) }
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
-        if (uri != null) vm.importPicture(pickTarget, uri, queryDisplayName(uri))
+        if (uri != null) {
+            when (val target = pickTarget) {
+                is PickTarget.Cover -> vm.importCoverImage(uri, queryDisplayName(uri))
+                is PickTarget.Block -> vm.importPicture(target.index, uri, queryDisplayName(uri))
+                null -> vm.importPicture(null, uri, queryDisplayName(uri))
+            }
+        }
         pickTarget = null
     }
-    val launchPicker: (Int?) -> Unit = { index ->
-        pickTarget = index
+    val launchPicker: (PickTarget?) -> Unit = { target ->
+        pickTarget = target
         picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
-    Scaffold(
+    CookBookScaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(stringResource(if (vm.isEditing) R.string.editor_title_edit else R.string.editor_title_new))
-                },
-                navigationIcon = {
-                    TextButton(onClick = onCancel) { Text(stringResource(R.string.action_cancel)) }
+            CookBookTopBar(
+                title = stringResource(if (vm.isEditing) R.string.editor_title_edit else R.string.editor_title_new),
+                navigation = {
+                    CookBookButton(
+                        text = stringResource(R.string.action_cancel),
+                        onClick = onCancel,
+                        buttonStyle = CookBookButtonStyle.Text,
+                    )
                 },
                 actions = {
-                    TextButton(onClick = { vm.save(onSaved) }, enabled = !saving) {
-                        Text(stringResource(R.string.action_save))
-                    }
+                    CookBookButton(
+                        text = stringResource(R.string.action_save),
+                        onClick = { vm.save(onSaved) },
+                        enabled = !saving,
+                        buttonStyle = CookBookButtonStyle.Text,
+                    )
                 },
             )
         },
-    ) { innerPadding ->
+    ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding() + 8.dp,
-                bottom = innerPadding.calculateBottomPadding() + 24.dp,
+                top = 8.dp,
+                bottom = 32.dp,
                 start = 16.dp,
                 end = 16.dp,
             ),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item {
-                OutlinedTextField(
+                CoverEditor(
+                    coverPath = recipe.coverImagePath,
+                    onPick = { launchPicker(PickTarget.Cover) },
+                    onRemove = vm::removeCoverImage,
+                )
+            }
+            item {
+                CookBookTextField(
                     value = recipe.title,
                     onValueChange = vm::setTitle,
-                    label = { Text(stringResource(R.string.editor_field_title)) },
+                    label = stringResource(R.string.editor_field_title),
                     singleLine = true,
                     isError = error == R.string.editor_error_title_required,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
             item {
-                OutlinedTextField(
+                CookBookTextField(
                     value = recipe.description,
                     onValueChange = vm::setDescription,
-                    label = { Text(stringResource(R.string.editor_field_description)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    label = stringResource(R.string.editor_field_description),
                     minLines = 2,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
             error?.let { errorRes ->
                 item {
-                    Text(
+                    CookBookText(
                         text = stringResource(errorRes),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = CookBookTheme.typography.bodySmall,
+                        color = CookBookTheme.colors.error,
                     )
                 }
             }
@@ -150,7 +181,7 @@ fun RecipeEditorScreen(
                     index = index,
                     block = block,
                     vm = vm,
-                    onPickImage = { launchPicker(index) },
+                    onPickImage = { launchPicker(PickTarget.Block(index)) },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -169,6 +200,60 @@ fun RecipeEditorScreen(
 
 private fun queryDisplayName(uri: Uri): String? = uri.lastPathSegment
 
+/** Секция общей картинки блюда (обложки) с выбором, заменой и удалением. */
+@Composable
+private fun CoverEditor(
+    coverPath: String?,
+    onPick: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        CookBookText(
+            text = stringResource(R.string.editor_cover_label),
+            style = CookBookTheme.typography.label,
+            color = CookBookTheme.colors.textSecondary,
+        )
+
+        if (coverPath != null) {
+            RecipePicture(path = coverPath, contentDescription = null)
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .clip(CookBookTheme.shapes.large)
+                    .background(CookBookTheme.colors.surfaceVariant),
+                contentAlignment = Alignment.Center,
+            ) {
+                Image(
+                    painter = painterResource(CoreR.drawable.ic_photo),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(CookBookTheme.colors.textSecondary),
+                    modifier = Modifier.size(40.dp),
+                )
+            }
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            CookBookButton(
+                text = stringResource(
+                    if (coverPath == null) R.string.editor_cover_add else R.string.editor_cover_change
+                ),
+                onClick = onPick,
+                buttonStyle = CookBookButtonStyle.Outlined,
+                modifier = Modifier.weight(1f),
+            )
+            if (coverPath != null) {
+                CookBookButton(
+                    text = stringResource(R.string.editor_cover_remove),
+                    onClick = onRemove,
+                    buttonStyle = CookBookButtonStyle.Text,
+                )
+            }
+        }
+    }
+}
+
 /** Ряд кнопок для добавления новых блоков в рецепт. */
 @Composable
 private fun AddBlockRow(
@@ -178,15 +263,19 @@ private fun AddBlockRow(
     onTimer: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(R.string.editor_add_section), style = MaterialTheme.typography.labelLarge)
+        CookBookText(
+            text = stringResource(R.string.editor_add_section),
+            style = CookBookTheme.typography.label,
+            color = CookBookTheme.colors.textSecondary,
+        )
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.horizontalScroll(rememberScrollState()),
         ) {
-            BlockChip(R.string.editor_add_text, DesignSystemR.drawable.ic_text, onClick = onText)
-            BlockChip(R.string.editor_add_picture, DesignSystemR.drawable.ic_photo, onClick = onPicture)
-            BlockChip(R.string.editor_add_checklist, DesignSystemR.drawable.ic_checklist, onClick = onChecklist)
-            BlockChip(R.string.editor_add_timer, DesignSystemR.drawable.ic_timer, onClick = onTimer)
+            BlockChip(R.string.editor_add_text, CoreR.drawable.ic_text, onClick = onText)
+            BlockChip(R.string.editor_add_picture, CoreR.drawable.ic_photo, onClick = onPicture)
+            BlockChip(R.string.editor_add_checklist, CoreR.drawable.ic_checklist, onClick = onChecklist)
+            BlockChip(R.string.editor_add_timer, CoreR.drawable.ic_timer, onClick = onTimer)
         }
     }
 }
@@ -194,16 +283,10 @@ private fun AddBlockRow(
 /** Кнопка-чип добавления блока с иконкой и подписью. */
 @Composable
 private fun BlockChip(labelRes: Int, iconRes: Int, onClick: () -> Unit) {
-    AssistChip(
+    CookBookChip(
+        label = stringResource(labelRes),
         onClick = onClick,
-        label = { Text(stringResource(labelRes)) },
-        leadingIcon = {
-            Icon(
-                painter = painterResource(iconRes),
-                contentDescription = null,
-                modifier = Modifier.width(20.dp),
-            )
-        },
+        leadingPainter = painterResource(iconRes),
     )
 }
 
@@ -216,25 +299,36 @@ private fun EditableBlockView(
     onPickImage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(modifier = modifier) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    CookBookCard(modifier = modifier) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             when (block) {
                 is TextBlock -> TextBlockEditor(index, block, vm)
                 is PictureBlock -> PictureBlockEditor(index, block, vm, onPickImage)
                 is ChecklistBlock -> ChecklistBlockEditor(index, block, vm)
                 is TimerBlock -> TimerBlockEditor(index, block, vm)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = { vm.moveUp(index) }, enabled = index > 0) {
-                    Text(stringResource(R.string.editor_move_up))
-                }
-                TextButton(onClick = { vm.moveDown(index) }, enabled = index < vm.recipe.value.blocks.lastIndex) {
-                    Text(stringResource(R.string.editor_move_down))
-                }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CookBookButton(
+                    text = stringResource(R.string.editor_move_up),
+                    onClick = { vm.moveUp(index) },
+                    enabled = index > 0,
+                    buttonStyle = CookBookButtonStyle.Text,
+                )
+                CookBookButton(
+                    text = stringResource(R.string.editor_move_down),
+                    onClick = { vm.moveDown(index) },
+                    enabled = index < vm.recipe.value.blocks.lastIndex,
+                    buttonStyle = CookBookButtonStyle.Text,
+                )
                 Spacer(Modifier.weight(1f))
-                TextButton(onClick = { vm.removeBlock(index) }) {
-                    Text(stringResource(R.string.editor_delete_block), color = MaterialTheme.colorScheme.error)
-                }
+                CookBookButton(
+                    text = stringResource(R.string.editor_delete_block),
+                    onClick = { vm.removeBlock(index) },
+                    buttonStyle = CookBookButtonStyle.Text,
+                )
             }
         }
     }
@@ -243,12 +337,12 @@ private fun EditableBlockView(
 /** Редактор текстового блока. */
 @Composable
 private fun TextBlockEditor(index: Int, block: TextBlock, vm: RecipeEditorViewModel) {
-    OutlinedTextField(
+    CookBookTextField(
         value = block.text,
         onValueChange = { vm.updateTextBlock(index, it) },
-        label = { Text(stringResource(R.string.editor_instruction)) },
-        modifier = Modifier.fillMaxWidth(),
+        label = stringResource(R.string.editor_instruction),
         minLines = 2,
+        modifier = Modifier.fillMaxWidth(),
     )
 }
 
@@ -261,17 +355,18 @@ private fun PictureBlockEditor(
     onPickImage: () -> Unit,
 ) {
     RecipePicture(path = block.imagePath, contentDescription = block.caption)
-    OutlinedButton(onClick = onPickImage, modifier = Modifier.fillMaxWidth()) {
-        Text(
-            stringResource(
-                if (block.imagePath.isBlank()) R.string.editor_pick_image else R.string.editor_replace_image
-            )
-        )
-    }
-    OutlinedTextField(
+    CookBookButton(
+        text = stringResource(
+            if (block.imagePath.isBlank()) R.string.editor_pick_image else R.string.editor_replace_image
+        ),
+        onClick = onPickImage,
+        buttonStyle = CookBookButtonStyle.Outlined,
+        modifier = Modifier.fillMaxWidth(),
+    )
+    CookBookTextField(
         value = block.caption,
         onValueChange = { vm.updatePictureCaption(index, it) },
-        label = { Text(stringResource(R.string.editor_caption)) },
+        label = stringResource(R.string.editor_caption),
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
     )
@@ -280,46 +375,52 @@ private fun PictureBlockEditor(
 /** Редактор чеклиста: заголовок, пункты и кнопки добавления/удаления пунктов. */
 @Composable
 private fun ChecklistBlockEditor(index: Int, block: ChecklistBlock, vm: RecipeEditorViewModel) {
-    OutlinedTextField(
+    CookBookTextField(
         value = block.title,
         onValueChange = { vm.updateChecklistTitle(index, it) },
-        label = { Text(stringResource(R.string.editor_checklist_title)) },
+        label = stringResource(R.string.editor_checklist_title),
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
     )
     block.items.forEachIndexed { itemIndex, item: CheckItem ->
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
+            CookBookTextField(
                 value = item.text,
                 onValueChange = { vm.updateCheckItem(index, itemIndex, it) },
-                label = { Text(stringResource(R.string.editor_item_number, itemIndex + 1)) },
-                modifier = Modifier.weight(1f),
+                label = stringResource(R.string.editor_item_number, itemIndex + 1),
                 singleLine = true,
+                modifier = Modifier.weight(1f),
             )
             Spacer(Modifier.width(8.dp))
-            TextButton(onClick = { vm.removeCheckItem(index, itemIndex) }) {
-                Text(stringResource(R.string.editor_remove_item))
-            }
+            CookBookButton(
+                text = stringResource(R.string.editor_remove_item),
+                onClick = { vm.removeCheckItem(index, itemIndex) },
+                buttonStyle = CookBookButtonStyle.Text,
+            )
         }
     }
-    OutlinedButton(onClick = { vm.addCheckItem(index) }, modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.editor_add_item))
-    }
+    CookBookButton(
+        text = stringResource(R.string.editor_add_item),
+        onClick = { vm.addCheckItem(index) },
+        buttonStyle = CookBookButtonStyle.Outlined,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 /** Редактор таймера: подпись, пресеты длительности и точный ввод минут и секунд. */
 @Composable
 private fun TimerBlockEditor(index: Int, block: TimerBlock, vm: RecipeEditorViewModel) {
-    OutlinedTextField(
+    CookBookTextField(
         value = block.label,
         onValueChange = { vm.updateTimerLabel(index, it) },
-        label = { Text(stringResource(R.string.editor_timer_label)) },
+        label = stringResource(R.string.editor_timer_label),
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
     )
-    Text(
+    CookBookText(
         text = stringResource(R.string.editor_duration, formatClock(block.seconds)),
-        style = MaterialTheme.typography.bodyMedium,
+        style = CookBookTheme.typography.bodySmall,
+        color = CookBookTheme.colors.textSecondary,
     )
 
     var minutes by remember(index) { mutableStateOf((block.seconds / 60).toString()) }
@@ -336,32 +437,32 @@ private fun TimerBlockEditor(index: Int, block: TimerBlock, vm: RecipeEditorView
         modifier = Modifier.horizontalScroll(rememberScrollState()),
     ) {
         TIMER_PRESETS_MINUTES.forEach { preset ->
-            AssistChip(
+            CookBookChip(
+                label = "$preset ${stringResource(R.string.editor_minutes)}",
                 onClick = {
                     minutes = preset.toString()
                     seconds = "0"
                     commit(minutes, seconds)
                 },
-                label = { Text("$preset ${stringResource(R.string.editor_minutes)}") },
             )
         }
     }
 
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedTextField(
+        CookBookTextField(
             value = minutes,
             onValueChange = { minutes = it; commit(it, seconds) },
-            label = { Text(stringResource(R.string.editor_minutes)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            label = stringResource(R.string.editor_minutes),
             singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.weight(1f),
         )
-        OutlinedTextField(
+        CookBookTextField(
             value = seconds,
             onValueChange = { seconds = it; commit(minutes, it) },
-            label = { Text(stringResource(R.string.editor_seconds)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            label = stringResource(R.string.editor_seconds),
             singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.weight(1f),
         )
     }

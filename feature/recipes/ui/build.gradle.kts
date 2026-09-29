@@ -10,7 +10,6 @@ android {
 
 dependencies {
     api(project(":feature:recipes:data"))
-    implementation(project(":core:common"))
-    implementation(project(":core:designsystem"))
+    implementation(project(":core"))
     implementation(libs.androidx.hilt.navigation.compose)
 }

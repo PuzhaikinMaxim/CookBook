@@ -16,6 +16,8 @@ data class RecipeEntity(
     val title: String,
     /** Описание рецепта. */
     val description: String,
+    /** Путь к большой общей картинке блюда (обложке). */
+    val coverImagePath: String? = null,
     /** Момент создания рецепта. */
     val createdAt: Long,
     /** Момент последнего изменения рецепта. */
