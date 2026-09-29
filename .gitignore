@@ -1,15 +1,39 @@
+# Gradle
+.gradle/
+build/
+
+# Kotlin
+.kotlin/
+*.kotlin_module
+
+# Android Studio / IntelliJ
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/deploymentTargetSelector.xml
+.idea/shelf/
+.idea/httpRequests/
+
+# Local configuration
+local.properties
+
+# Build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+
+# Logs and profiling
+*.log
+*.hprof
+
+# OS
+.DS_Store
+Thumbs.db

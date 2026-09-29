@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_title_new">Новый рецепт</string>
+    <string name="editor_title_edit">Редактирование рецепта</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_save">Сохранить</string>
+
+    <string name="editor_field_title">Название</string>
+    <string name="editor_field_description">Описание (необязательно)</string>
+
+    <string name="editor_add_section">Добавить в рецепт</string>
+    <string name="editor_add_text">+ Текст</string>
+    <string name="editor_add_picture">+ Изображение</string>
+    <string name="editor_add_checklist">+ Список</string>
+    <string name="editor_add_timer">+ Таймер</string>
+
+    <string name="editor_instruction">Инструкция</string>
+    <string name="editor_pick_image">Выбрать изображение</string>
+    <string name="editor_replace_image">Заменить изображение</string>
+    <string name="editor_caption">Подпись (необязательно)</string>
+    <string name="editor_checklist_title">Название списка</string>
+    <string name="editor_item_number">Пункт %1$d</string>
+    <string name="editor_remove_item">Удалить</string>
+    <string name="editor_add_item">+ Добавить пункт</string>
+    <string name="editor_timer_label">Название таймера</string>
+    <string name="editor_duration">Длительность: %1$s</string>
+    <string name="editor_minutes">мин</string>
+    <string name="editor_seconds">сек</string>
+    <string name="editor_move_up">Вверх</string>
+    <string name="editor_move_down">Вниз</string>
+    <string name="editor_delete_block">Удалить</string>
+
+    <string name="editor_default_checklist_title">Ингредиенты</string>
+    <string name="editor_default_timer_label">Готовка</string>
+
+    <string name="editor_error_title_required">Укажите название рецепта</string>
+    <string name="editor_error_image">Не удалось загрузить изображение</string>
+    <string name="editor_error_save">Не удалось сохранить рецепт</string>
+</resources>

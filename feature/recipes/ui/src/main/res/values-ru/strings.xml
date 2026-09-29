@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="recipes_title">Кулинарная книга</string>
+    <string name="recipes_add">Добавить рецепт</string>
+    <string name="recipes_empty_title">Пока нет рецептов</string>
+    <string name="recipes_empty_body">Нажмите +, чтобы добавить первый рецепт с текстом, изображениями, списками и таймерами.</string>
+    <string name="recipes_search_hint">Поиск рецептов</string>
+    <string name="recipes_search_empty">Нет рецептов по запросу «%1$s».</string>
+
+    <string name="action_delete">Удалить</string>
+    <string name="action_back">Назад</string>
+    <string name="action_edit">Изменить</string>
+    <string name="action_exit">Выйти</string>
+
+    <string name="recipe_not_found">Рецепт не найден</string>
+
+    <string name="cook_start">Начать готовить</string>
+    <string name="cook_no_steps">В этом рецепте пока нет шагов.</string>
+    <string name="cook_step_progress">Шаг %1$d из %2$d</string>
+
+    <string name="action_previous">Назад</string>
+    <string name="action_next">Далее</string>
+    <string name="action_finish">Готово</string>
+
+    <string name="timer_done">Готово!</string>
+    <string name="timer_restart">Заново</string>
+    <string name="timer_pause">Пауза</string>
+    <string name="timer_start">Старт</string>
+    <string name="timer_reset">Сброс</string>
+    <string name="timer_finished_title">Таймер завершён</string>
+    <string name="timer_finished_body">Ваш таймер истёк</string>
+
+    <string name="block_summary_separator">  •  </string>
+    <plurals name="block_summary_text">
+        <item quantity="one">%1$d текст</item>
+        <item quantity="few">%1$d текста</item>
+        <item quantity="many">%1$d текстов</item>
+        <item quantity="other">%1$d текста</item>
+    </plurals>
+    <plurals name="block_summary_pictures">
+        <item quantity="one">%1$d изображение</item>
+        <item quantity="few">%1$d изображения</item>
+        <item quantity="many">%1$d изображений</item>
+        <item quantity="other">%1$d изображения</item>
+    </plurals>
+    <plurals name="block_summary_checklists">
+        <item quantity="one">%1$d список</item>
+        <item quantity="few">%1$d списка</item>
+        <item quantity="many">%1$d списков</item>
+        <item quantity="other">%1$d списка</item>
+    </plurals>
+    <plurals name="block_summary_timers">
+        <item quantity="one">%1$d таймер</item>
+        <item quantity="few">%1$d таймера</item>
+        <item quantity="many">%1$d таймеров</item>
+        <item quantity="other">%1$d таймера</item>
+    </plurals>
+</resources>
