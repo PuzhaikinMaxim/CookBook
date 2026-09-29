@@ -30,5 +30,6 @@ dependencies {
     implementation(project(":feature:recipeeditor:ui"))
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.navigation.compose)
 }

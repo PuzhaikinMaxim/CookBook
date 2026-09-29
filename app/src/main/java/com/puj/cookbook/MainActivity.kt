@@ -8,12 +8,19 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.puj.cookbook.common.RecipeNavArgs
 import com.puj.cookbook.common.RecipeRoutes
+import com.puj.cookbook.designsystem.CookBookSplash
 import com.puj.cookbook.designsystem.CookBookTheme
 import com.puj.cookbook.recipes.domain.RecipeDefaults
 import com.puj.cookbook.recipes.ui.CookAlongScreen
@@ -33,20 +41,42 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             CookBookTheme {
-                RequestNotificationPermission()
                 CookBookApp()
             }
         }
     }
 }
 
-/** Корневой composable приложения с графом навигации между рецептами, готовкой и редактором. */
+/**
+ * Корневой composable приложения: показывает анимированную заставку, затем плавно
+ * переходит к графу навигации.
+ */
 @Composable
 fun CookBookApp() {
+    var showSplash by rememberSaveable { mutableStateOf(true) }
+
+    Crossfade(
+        targetState = showSplash,
+        animationSpec = tween(durationMillis = 500),
+        label = "splashTransition",
+    ) { isSplash ->
+        if (isSplash) {
+            CookBookSplash(onFinished = { showSplash = false })
+        } else {
+            MainNavigation()
+        }
+    }
+}
+
+/** Граф навигации между списком рецептов, готовкой и редактором. */
+@Composable
+private fun MainNavigation() {
+    RequestNotificationPermission()
     val navController = rememberNavController()
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->

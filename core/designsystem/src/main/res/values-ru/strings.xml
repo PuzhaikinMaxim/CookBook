@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="picture_placeholder">Изображение</string>
+    <string name="splash_title">Кулинарная книга</string>
+    <string name="splash_tagline">Ваш помощник на кухне</string>
 </resources>
