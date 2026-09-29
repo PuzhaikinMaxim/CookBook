@@ -21,6 +21,8 @@ data class Recipe(
     val title: String,
     /** Необязательное описание рецепта. */
     val description: String = "",
+    /** Путь к большой общей картинке блюда (обложке); null, если обложки нет. */
+    val coverImagePath: String? = null,
     /** Момент создания рецепта в миллисекундах. */
     val createdAt: Long = System.currentTimeMillis(),
     /** Момент последнего изменения рецепта в миллисекундах. */
@@ -28,6 +30,10 @@ data class Recipe(
     /** Блоки рецепта в порядке отображения. */
     val blocks: List<RecipeBlock> = emptyList(),
 )
+
+/** Путь к картинке-превью: обложка блюда или первое изображение среди блоков. */
+val Recipe.previewImagePath: String?
+    get() = coverImagePath ?: blocks.filterIsInstance<PictureBlock>().firstOrNull()?.imagePath
 
 /** Общий контракт любого блока рецепта. */
 sealed interface RecipeBlock {

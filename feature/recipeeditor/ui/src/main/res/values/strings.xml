@@ -8,6 +8,11 @@
     <string name="editor_field_title">Title</string>
     <string name="editor_field_description">Description (optional)</string>
 
+    <string name="editor_cover_label">Dish photo</string>
+    <string name="editor_cover_add">Add a dish photo</string>
+    <string name="editor_cover_change">Change photo</string>
+    <string name="editor_cover_remove">Remove photo</string>
+
     <string name="editor_add_section">Add to recipe</string>
     <string name="editor_add_text">+ Text</string>
     <string name="editor_add_picture">+ Picture</string>

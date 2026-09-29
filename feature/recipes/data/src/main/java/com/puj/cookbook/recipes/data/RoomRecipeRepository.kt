@@ -57,6 +57,7 @@ class RoomRecipeRepository(private val database: CookBookDatabase) : RecipeRepos
         val entity = RecipeEntity(
             title = recipe.title,
             description = recipe.description,
+            coverImagePath = recipe.coverImagePath,
             createdAt = recipe.createdAt,
             updatedAt = now,
         )
@@ -68,6 +69,7 @@ class RoomRecipeRepository(private val database: CookBookDatabase) : RecipeRepos
             id = recipe.id,
             title = recipe.title,
             description = recipe.description,
+            coverImagePath = recipe.coverImagePath,
             createdAt = recipe.createdAt,
             updatedAt = now,
         )
@@ -129,6 +131,7 @@ private fun RecipeWithBlocks.toDomain(): Recipe {
         id = recipe.id,
         title = recipe.title,
         description = recipe.description,
+        coverImagePath = recipe.coverImagePath,
         createdAt = recipe.createdAt,
         updatedAt = recipe.updatedAt,
         blocks = sortedBlocks,

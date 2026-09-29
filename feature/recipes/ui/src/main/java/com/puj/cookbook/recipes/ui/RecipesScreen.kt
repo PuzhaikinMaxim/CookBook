@@ -5,21 +5,23 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,11 +41,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.puj.cookbook.designsystem.R as DesignSystemR
+import com.puj.cookbook.designsystem.RecipeThumbnail
 import com.puj.cookbook.recipes.domain.ChecklistBlock
 import com.puj.cookbook.recipes.domain.PictureBlock
 import com.puj.cookbook.recipes.domain.Recipe
 import com.puj.cookbook.recipes.domain.TextBlock
 import com.puj.cookbook.recipes.domain.TimerBlock
+import com.puj.cookbook.recipes.domain.previewImagePath
 
 /**
  * Экран списка рецептов: поиск, список карточек и кнопка добавления нового рецепта.
@@ -165,7 +168,7 @@ private fun RecipeList(
             start = 16.dp,
             end = 16.dp,
         ),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         items(recipes, key = { it.id }) { recipe ->
             RecipeCard(recipe, onClick = { onOpen(recipe.id) }, onDelete = { onDelete(recipe.id) })
@@ -173,59 +176,95 @@ private fun RecipeList(
     }
 }
 
-/** Карточка одного рецепта с названием, описанием, сводкой блоков и кнопкой удаления. */
+/** Карточка одного рецепта: миниатюра, название, описание, состав блоков и кнопка удаления. */
 @Composable
 private fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onDelete: () -> Unit) {
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            RecipeThumbnail(
+                path = recipe.previewImagePath,
+                contentDescription = null,
+                modifier = Modifier.size(84.dp),
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = recipe.title,
-                    modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                TextButton(onClick = onDelete) { Text(stringResource(R.string.action_delete)) }
+                if (recipe.description.isNotBlank()) {
+                    Text(
+                        text = recipe.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                Spacer(Modifier.size(6.dp))
+                BlockTypeSummary(recipe)
             }
-            if (recipe.description.isNotBlank()) {
-                Text(
-                    text = recipe.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+            IconButton(onClick = onDelete) {
+                Icon(
+                    painter = painterResource(DesignSystemR.drawable.ic_delete),
+                    contentDescription = stringResource(R.string.action_delete),
+                    tint = MaterialTheme.colorScheme.error,
                 )
             }
-            Text(
-                text = blockSummary(recipe),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
 
-/** Строит сводку по количеству блоков каждого типа, например «2 текста • 1 таймер». */
+/** Компактная сводка по типам блоков: иконка и количество. */
 @Composable
-private fun blockSummary(recipe: Recipe): String {
+private fun BlockTypeSummary(recipe: Recipe) {
     var text = 0
     var pictures = 0
     var checklists = 0
     var timers = 0
-    recipe.blocks.forEach {
-        when (it) {
+    recipe.blocks.forEach { block ->
+        when (block) {
             is TextBlock -> text++
             is PictureBlock -> pictures++
             is ChecklistBlock -> checklists++
             is TimerBlock -> timers++
         }
     }
-    val parts = buildList {
-        if (text > 0) add(pluralStringResource(R.plurals.block_summary_text, text, text))
-        if (pictures > 0) add(pluralStringResource(R.plurals.block_summary_pictures, pictures, pictures))
-        if (checklists > 0) add(pluralStringResource(R.plurals.block_summary_checklists, checklists, checklists))
-        if (timers > 0) add(pluralStringResource(R.plurals.block_summary_timers, timers, timers))
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (text > 0) SummaryItem(DesignSystemR.drawable.ic_text, text)
+        if (pictures > 0) SummaryItem(DesignSystemR.drawable.ic_photo, pictures)
+        if (checklists > 0) SummaryItem(DesignSystemR.drawable.ic_checklist, checklists)
+        if (timers > 0) SummaryItem(DesignSystemR.drawable.ic_timer, timers)
     }
-    return parts.joinToString(stringResource(R.string.block_summary_separator))
+}
+
+/** Один пункт сводки: иконка типа блока и число, если блоков больше одного. */
+@Composable
+private fun SummaryItem(iconRes: Int, count: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(16.dp),
+        )
+        if (count > 1) {
+            Spacer(Modifier.width(2.dp))
+            Text(
+                text = count.toString(),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }

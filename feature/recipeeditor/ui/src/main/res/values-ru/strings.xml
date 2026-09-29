@@ -8,6 +8,11 @@
     <string name="editor_field_title">Название</string>
     <string name="editor_field_description">Описание (необязательно)</string>
 
+    <string name="editor_cover_label">Фото блюда</string>
+    <string name="editor_cover_add">Добавить фото блюда</string>
+    <string name="editor_cover_change">Изменить фото</string>
+    <string name="editor_cover_remove">Удалить фото</string>
+
     <string name="editor_add_section">Добавить в рецепт</string>
     <string name="editor_add_text">+ Текст</string>
     <string name="editor_add_picture">+ Изображение</string>

@@ -75,6 +75,22 @@ class RecipeEditorViewModel @Inject constructor(
         update { recipe -> RecipeDrafting.withDescription(recipe, value) }
     }
 
+    /** Импортирует выбранное изображение и делает его общей картинкой блюда (обложкой). */
+    fun importCoverImage(uri: Uri, displayName: String?) {
+        viewModelScope.launch {
+            runCatching { imageStore.import(uri, displayName) }
+                .onSuccess { path ->
+                    update { recipe -> RecipeDrafting.withCoverImage(recipe, path) }
+                }
+                .onFailure { _error.value = R.string.editor_error_image }
+        }
+    }
+
+    /** Убирает обложку блюда. */
+    fun removeCoverImage() {
+        update { recipe -> RecipeDrafting.withCoverImage(recipe, null) }
+    }
+
     /** Добавляет текстовый блок. */
     fun addText() {
         update { recipe -> RecipeDrafting.addText(recipe) }
